@@ -1,0 +1,32 @@
+version: '3.6'
+services:
+  consul:
+    container_name: consul
+    build:
+      context: .
+      dockerfile: ./consul/Dockerfile
+    image: consul
+    restart: always
+    ports:
+      - 8500:8500
+    command: agent -server -bind 0.0.0.0 -client 0.0.0.0 -bootstrap -data-dir=data
+  vault:
+    build:
+      context: .
+      dockerfile: ./vault-docker/Dockerfile
+    restart: always
+    container_name: vault
+#    ports:
+#     - 8200:8200
+    network_mode: "host"
+    hostname: localhost
+    volumes:
+      - ./vault-docker/vault:/vault/config
+      - ./vault-docker/vault/policies:/vault/policies
+      - ./vault-docker/vault/data:/vault/data
+      - ./vault-docker/vault/logs:/vault/logs
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://127.0.0.1:8200
+    cap_add:
+      - IPC_LOCK
